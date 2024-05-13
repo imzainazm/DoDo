@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Task Detail - {{ task.title }}{% endblock %}
+
+{% block content %}
+<h2>{{ task.title }}</h2>
+<p><strong>Description:</strong> {{ task.description }}</p>
+<p><strong>Project:</strong> {{ task.project }}</p>
+<p><strong>Deadline:</strong> {{ task.deadline }}</p>
+<p><strong>Completed:</strong> {{ task.completed }}</p>
+{% endblock %}
