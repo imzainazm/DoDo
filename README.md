@@ -65,7 +65,11 @@ As a best practice, it is advised to create a virtual environment to store this 
     ```bash
     python manage.py seed_data
     ```
-10. Run dev server
+10. Run unit tests
+    ```bash
+    python manage.py test
+    ```
+11. Run dev server
     ```bash
     python manage.py runserver
     ```
