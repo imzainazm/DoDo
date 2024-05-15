@@ -7,11 +7,24 @@ on:
   push:
     branches:
       - develop
-  workflow_dispatch: # Added workflow_dispatch event
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    env:
+      DB_NAME: ${{ env.DB_NAME }}
+      DB_USER: ${{ env.DB_USER }}
+      DB_PASSWORD: ${{ env.DB_PASSWORD }}
+      DB_HOST: ${{ env.DB_HOST }}
+      DB_PORT: ${{ env.DB_PORT }}
 
     steps:
     - name: Checkout code
@@ -27,12 +40,26 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run migrations
+    - name: Create database with password
+      run: |
+        psql -U $DB_USER -d postgres -c "CREATE DATABASE $DB_NAME WITH OWNER $DB_USER ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0 PASSWORD '$DB_PASSWORD';"
+
+    - name: Run Migrations
+      env:
+        DB_NAME: ${{ env.DB_NAME }}
+        DB_USER: ${{ env.DB_USER }}
+        DB_PASSWORD: ${{ env.DB_PASSWORD }}
+        DB_HOST: ${{ env.DB_HOST }}
+        DB_PORT: ${{ env.DB_PORT }}
       run: |
         python manage.py migrate
 
     - name: Run unit tests
-      id: unittests
+      env:
+        DB_NAME: ${{ env.DB_NAME }}
+        DB_USER: ${{ env.DB_USER }}
+        DB_PASSWORD: ${{ env.DB_PASSWORD }}
+        DB_HOST: ${{ env.DB_HOST }}
+        DB_PORT: ${{ env.DB_PORT }}
       run: |
         python manage.py test
-      continue-on-error: true
