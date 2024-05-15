@@ -1,46 +1,32 @@
-name: PostgreSQL Workflow
+name: Python 3.10.4, PostgreSQL, and Database Setup
 
-on: [push]
+on:
+  push: {}
 
 jobs:
-  build:
+  setup-and-run:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Set up PostgreSQL
-      run: |
-        sudo apt update
-        sudo apt install postgresql-client -y
+      - uses: actions/checkout@v3
 
-    - name: Wait for PostgreSQL to be ready
-      run: |
-        until pg_isready -h localhost -p 5432 -U ${{ secrets.DB_USER }}; do
-          echo "Waiting for PostgreSQL to start..."
-          sleep 2
-        done
+      - name: Install Python 3.10.4
+        uses: shivammathur/setup-python@v2
+        with:
+          python-version: '3.10.4'
 
-    - name: Create Database
-      run: |
-        psql -h localhost -U ${{ secrets.DB_USER }} -c "CREATE DATABASE ${{ secrets.DB_NAME }}"
-      
-    - name: Run Tests
-      run: |
-        # Add your test commands here
+      - name: Install PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install postgresql postgresql-contrib -y  # Install PostgreSQL and additional packages
 
-    - name: Clean up
-      run: |
-        # Add cleanup commands here
+      - name: Create Database 
+        run: |
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+          sudo -u postgres psql -c "CREATE DATABASE ${DB_NAME}"
+          sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}'"
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER}"
+
+          echo "Database '${DB_NAME}' created successfully."
