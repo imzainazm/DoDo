@@ -33,9 +33,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Create database with password
+    - name: Create database
       run: |
-        sudo -u $DB_USER psql -d postgres -c "CREATE DATABASE $DB_NAME WITH OWNER $DB_USER ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0 ENCRYPTED PASSWORD '$DB_PASSWORD';"
+        sudo -u $DB_USER psql -d postgres -c "CREATE DATABASE $DB_NAME WITH OWNER $DB_USER ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0;"
+
+    - name: Create user role with password
+      run: |
+        sudo -u $DB_USER psql -d postgres -c "CREATE ROLE myuser WITH LOGIN PASSWORD '$DB_PASSWORD';"
+
+    - name: Grant ownership of the database to the role
+      run: |
+        sudo -u $DB_USER psql -d postgres -c "ALTER DATABASE $DB_NAME OWNER TO myuser;"
 
     - name: Run Migrations
       run: python manage.py migrate
