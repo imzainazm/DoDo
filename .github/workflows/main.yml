@@ -57,3 +57,14 @@ jobs:
         docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_PASSWORD }}
         docker tag dodo ${{ secrets.DOCKERHUB_USERNAME }}/dodo
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/dodo
+
+    - name: Send Slack Message
+      run: |
+        curl -X POST \
+          -H 'Content-type: application/json' \
+          --data '{"text":"Your pipeline succeeded! :tada:"}' \
+          https://slack.com/api/chat.postMessage?token=$SLACK_TOKEN&channel=CHANNEL_ID
+      env:
+        SLACK_TOKEN: ${{ secrets.SLACK }}
+        CHANNEL_ID: C073FGS4CQ5
+
