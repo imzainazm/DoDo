@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,11 +21,11 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     env:
-      DB_NAME: ${{ env.DB_NAME }}
-      DB_USER: ${{ env.DB_USER }}
-      DB_PASSWORD: ${{ env.DB_PASSWORD }}
-      DB_HOST: ${{ env.DB_HOST }}
-      DB_PORT: ${{ env.DB_PORT }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
 
     steps:
     - name: Checkout code
@@ -45,21 +46,9 @@ jobs:
         psql -U $DB_USER -d postgres -c "CREATE DATABASE $DB_NAME WITH OWNER $DB_USER ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0 PASSWORD '$DB_PASSWORD';"
 
     - name: Run Migrations
-      env:
-        DB_NAME: ${{ env.DB_NAME }}
-        DB_USER: ${{ env.DB_USER }}
-        DB_PASSWORD: ${{ env.DB_PASSWORD }}
-        DB_HOST: ${{ env.DB_HOST }}
-        DB_PORT: ${{ env.DB_PORT }}
       run: |
-        python manage.py migrate
+        DB_NAME=${{ secrets.DB_NAME }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_HOST=${{ secrets.DB_HOST }} DB_PORT=${{ secrets.DB_PORT }} python manage.py migrate
 
     - name: Run unit tests
-      env:
-        DB_NAME: ${{ env.DB_NAME }}
-        DB_USER: ${{ env.DB_USER }}
-        DB_PASSWORD: ${{ env.DB_PASSWORD }}
-        DB_HOST: ${{ env.DB_HOST }}
-        DB_PORT: ${{ env.DB_PORT }}
       run: |
-        python manage.py test
+        DB_NAME=${{ secrets.DB_NAME }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_HOST=${{ secrets.DB_HOST }} DB_PORT=${{ secrets.DB_PORT }} python manage.py test
