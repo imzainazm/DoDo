@@ -19,6 +19,8 @@ jobs:
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
     env:
       DB_NAME: ${{ secrets.DB_NAME }}
@@ -43,7 +45,7 @@ jobs:
 
     - name: Create database with password
       run: |
-        psql -U $DB_USER -d postgres -c "CREATE DATABASE $DB_NAME WITH OWNER $DB_USER ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0 PASSWORD '$DB_PASSWORD';"
+        psql -U postgres -d postgres -c "CREATE DATABASE $DB_NAME WITH OWNER $DB_USER ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0 PASSWORD '$DB_PASSWORD';"
 
     - name: Run Migrations
       run: |
