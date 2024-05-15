@@ -63,7 +63,7 @@ jobs:
         curl -X POST \
           -H 'Content-type: application/json' \
           --data '{"text":"Your pipeline succeeded! :tada:"}' \
-          https://slack.com/api/chat.postMessage?token=$SLACK&channel=CHANNEL_ID
+          https://slack.com/api/chat.postMessage?token=$SLACK_TOKEN&channel=$CHANNEL_ID
       env:
         SLACK_TOKEN: ${{ secrets.SLACK }}
         CHANNEL_ID: C073FGS4CQ5
