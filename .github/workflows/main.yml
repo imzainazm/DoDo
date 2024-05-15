@@ -52,6 +52,8 @@ jobs:
         DB_PORT=${{ secrets.DB_PORT }} \
         python manage.py test || \
         (curl -X POST -H 'Content-type: application/json' --data '{"text":"PIPELINE FAILURE: Unit tests failed"}' $SLACK && exit 1)
+      env:
+          SLACK: ${{ secrets.SLACK }}
 
     
     - name: Build Docker image
