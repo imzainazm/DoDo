@@ -1,7 +1,14 @@
-name: Pipeline-
+name: Pipeline
 
 on:
-  push: {}
+  pull_request:
+    branches:
+      - develop
+    types:
+      - opened
+  push:
+    branches:
+      - develop
 
 jobs:
   build:
