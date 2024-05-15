@@ -19,7 +19,7 @@ class TaskListViewTests(TestCase):
         task = Task.objects.create(title='Make gravity gun stronger', description='Dummy description', project=project, completed=False, deadline=timezone.now() + timezone.timedelta(days=12))
         url = reverse('task_detail', args=[task.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 404) #intentional test failure
         self.assertContains(response, 'Make gravity gun stronger')
         self.assertContains(response, 'Dummy description')
 
