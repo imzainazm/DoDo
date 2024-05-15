@@ -10,7 +10,7 @@ class TaskListViewTests(TestCase):
         project = Project.objects.create(name='Half-life', description='Dummy description')
         task = Task.objects.create(title='Make gravity gun stronger', description='Dummy description', project=project, completed=False, deadline=timezone.now() + timezone.timedelta(days=9))
         response = self.client.get(reverse('task_list'))
-        self.assertEqual(response.status_code, 404) #intentional failure
+        self.assertEqual(response.status_code, 404) #intentional failure check
         self.assertContains(response, 'Make gravity gun stronger')
 
     def test_task_detail_view(self):
