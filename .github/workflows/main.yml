@@ -13,25 +13,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:14.12
-        ports:
-          - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-
-    env:
-      DB_NAME: ${{ secrets.DB_NAME }}
-      DB_USER: ${{ secrets.DB_USER }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: Install PostgreSQL
+      run: sudo apt-get install postgresql -y
+
+    - name: Start PostgreSQL service
+      run: sudo service postgresql start
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -48,9 +38,14 @@ jobs:
         psql -U postgres -d postgres -c "CREATE DATABASE $DB_NAME WITH OWNER $DB_USER ENCODING 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8' TEMPLATE template0 PASSWORD '$DB_PASSWORD';"
 
     - name: Run Migrations
-      run: |
-        DB_NAME=${{ secrets.DB_NAME }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_HOST=${{ secrets.DB_HOST }} DB_PORT=${{ secrets.DB_PORT }} python manage.py migrate
+      run: python manage.py migrate
 
     - name: Run unit tests
-      run: |
-        DB_NAME=${{ secrets.DB_NAME }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_HOST=${{ secrets.DB_HOST }} DB_PORT=${{ secrets.DB_PORT }} python manage.py test
+      run: python manage.py test
+
+    env:
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_HOST: localhost
+      DB_PORT: 5432
