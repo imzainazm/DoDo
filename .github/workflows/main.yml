@@ -60,8 +60,8 @@ jobs:
 
     - name: Send Slack Message
       run: |
-        curl -X POST -H 'Content-type: application/json' --data '{"text":"Pipeline Success"}' https://hooks.slack.com/services/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
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"Pipeline Success"}' https://hooks.slack.com/services/T073X44EL0Z/C073FGS4CQ5/${{ secrets.SLACK }}
       env:
         SLACK_TOKEN: ${{ secrets.SLACK }}
-        CHANNEL_ID: C073FGS4CQ5
+        CHANNEL_ID: VA7vEyotyi5FSWO4Q3YssTJx
 
