@@ -43,16 +43,16 @@ jobs:
       run: |
         DB_NAME=${{ secrets.DB_NAME }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_HOST=${{ secrets.DB_HOST }} DB_PORT=${{ secrets.DB_PORT }} python manage.py migrate
 
-    - name: Run unit tests
+    - name: Run unit tests and notify Slack on failure
       run: |
-        DB_NAME=${{ secrets.DB_NAME }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_HOST=${{ secrets.DB_HOST }} DB_PORT=${{ secrets.DB_PORT }} python manage.py test
-      continue-on-error: true
+        DB_NAME=${{ secrets.DB_NAME }} \
+        DB_USER=${{ secrets.DB_USER }} \
+        DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+        DB_HOST=${{ secrets.DB_HOST }} \
+        DB_PORT=${{ secrets.DB_PORT }} \
+        python manage.py test || \
+        (curl -X POST -H 'Content-type: application/json' --data '{"text":"PIPELINE FAILURE: Unit tests failed"}' $SLACK && exit 1)
 
-    - name: Check test status and send message to Slack
-      if: ${{ failure() }}
-      run: |
-        curl -X POST -H 'Content-type: application/json' --data '{"text":"PIPELINE FAILURE: Unit tests failed"}' $SLACK
-        exit 1
     
     - name: Build Docker image
       run: |
