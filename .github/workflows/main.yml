@@ -4,8 +4,7 @@ on:
   pull_request:
     branches:
       - develop
-    types:
-      - opened
+    types: [opened, synchronize]
   push:
     branches:
       - develop
