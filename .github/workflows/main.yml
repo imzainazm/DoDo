@@ -24,6 +24,16 @@ jobs:
           POSTGRES_USER: ${{ secrets.DB_USER }}
           POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
+    env:
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_HOST: localhost
+      DB_PORT: 5432
+      SLACK: ${{ secrets.SLACK }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -31,7 +41,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.10.4'
+        python-version: '3.12.3-alpine3.19'
 
     - name: Install dependencies
       run: |
@@ -39,37 +49,24 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run Migrations
-      run: |
-        DB_NAME=${{ secrets.DB_NAME }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_HOST=${{ secrets.DB_HOST }} DB_PORT=${{ secrets.DB_PORT }} python manage.py migrate
+      run: python manage.py migrate
 
     - name: Run unit tests and notify Slack on failure
       run: |
-        DB_NAME=${{ secrets.DB_NAME }} \
-        DB_USER=${{ secrets.DB_USER }} \
-        DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-        DB_HOST=${{ secrets.DB_HOST }} \
-        DB_PORT=${{ secrets.DB_PORT }} \
         python manage.py test || \
         (curl -X POST -H 'Content-type: application/json' --data '{"text":"PIPELINE FAILURE: Unit tests failed"}' $SLACK && exit 1)
-      env:
-          SLACK: ${{ secrets.SLACK }}
 
-    
     - name: Build Docker image
-      run: |
-        docker build -t dodo .
+      run: docker build -t dodo .
 
     - name: Push Docker image to Docker Hub
       if: success()
       run: |
-        docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_PASSWORD }}
-        docker tag dodo ${{ secrets.DOCKERHUB_USERNAME }}/dodo
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/dodo
+        docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+        docker tag dodo $DOCKERHUB_USERNAME/dodo
+        docker push $DOCKERHUB_USERNAME/dodo
 
     - name: Send message to Slack
+      if: success()
       run: |
         curl -X POST -H 'Content-type: application/json' --data '{"text":"PIPELINE SUCCESS"}' $SLACK
-      env:
-          SLACK: ${{ secrets.SLACK }}
-
-
